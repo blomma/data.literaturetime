@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "tPgs3iZjZF7t19ZKlKq7FAsI6Uc23LpZlxe/qxx++DSW6H5frFHMqaiYuTgYj8lagAi8kdbbslejPS2I5VwOAQ==",
+  "success": true,
+  "projectFilePath": "/Users/blomma/Projects/literature/data.literaturetime/src/Irrbloss/Irrbloss.csproj",
+  "expectedPackageFiles": [
+    "/Users/blomma/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/6.0.0/microsoft.extensions.dependencyinjection.abstractions.6.0.0.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/microsoft.extensions.dependencymodel/6.0.0/microsoft.extensions.dependencymodel.6.0.0.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/system.buffers/4.5.1/system.buffers.4.5.1.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/system.memory/4.5.4/system.memory.4.5.4.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/system.text.encodings.web/6.0.0/system.text.encodings.web.6.0.0.nupkg.sha512",
+    "/Users/blomma/.nuget/packages/system.text.json/6.0.0/system.text.json.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
