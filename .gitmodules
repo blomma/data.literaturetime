@@ -1,0 +1,3 @@
+[submodule "src/Irrbloss"]
+	path = src/Irrbloss
+	url = https://github.com/blomma/irrbloss
