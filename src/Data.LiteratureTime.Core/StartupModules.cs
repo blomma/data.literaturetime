@@ -1,6 +1,7 @@
 namespace Data.LiteratureTime.Core;
 
 using Data.LiteratureTime.Core.Workers;
+using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;

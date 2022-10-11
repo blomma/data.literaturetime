@@ -3,6 +3,7 @@ namespace Data.LiteratureTime.Core;
 using Data.LiteratureTime.Core.Interfaces;
 using Data.LiteratureTime.Core.Services;
 using Data.LiteratureTime.Core.Workers;
+using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
