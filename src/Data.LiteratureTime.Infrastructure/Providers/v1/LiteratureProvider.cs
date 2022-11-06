@@ -12,6 +12,13 @@ public class LiteratureProvider : ILiteratureProvider
 
     public Task<string[]> GetLiteratureTimesAsync()
     {
-        return File.ReadAllLinesAsync("litclock_annotated.csv");
+        var relativePathToFile = GetPathToQuotes();
+        return File.ReadAllLinesAsync(relativePathToFile);
+    }
+
+    private static string GetPathToQuotes()
+    {
+        var separator = Path.DirectorySeparatorChar;
+        return $"Data{separator}v1{separator}litclock_annotated.csv";
     }
 }
