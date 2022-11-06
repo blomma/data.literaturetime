@@ -1,8 +1,9 @@
-namespace Data.LiteratureTime.Core.Services;
+namespace Data.LiteratureTime.Core.Services.v1;
 
 using System.Security.Cryptography;
 using System.Text;
 using Data.LiteratureTime.Core.Interfaces;
+using Data.LiteratureTime.Core.Interfaces.v1;
 using Data.LiteratureTime.Core.Models;
 
 public class LiteratureService : ILiteratureService

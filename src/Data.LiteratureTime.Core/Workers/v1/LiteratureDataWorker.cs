@@ -1,6 +1,6 @@
-namespace Data.LiteratureTime.Core.Workers;
+namespace Data.LiteratureTime.Core.Workers.v1;
 
-using Data.LiteratureTime.Core.Interfaces;
+using Data.LiteratureTime.Core.Interfaces.v1;
 using Data.LiteratureTime.Core.Models;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;

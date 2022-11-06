@@ -1,4 +1,4 @@
-namespace Data.LiteratureTime.Core.Interfaces;
+namespace Data.LiteratureTime.Core.Interfaces.v1;
 
 public interface ILiteratureProvider
 {

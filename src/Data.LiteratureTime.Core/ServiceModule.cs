@@ -1,8 +1,5 @@
 namespace Data.LiteratureTime.Core;
 
-using Data.LiteratureTime.Core.Interfaces;
-using Data.LiteratureTime.Core.Services;
-using Data.LiteratureTime.Core.Workers;
 using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +8,8 @@ public class ServiceModule : IServiceModule
 {
     public void AddServices(IServiceCollection service)
     {
-        service.AddSingleton<LiteratureDataWorker>();
+        service.AddSingleton<Workers.v1.LiteratureDataWorker>();
         service.AddSingleton<RedisConnection>();
-        service.AddTransient<ILiteratureService, LiteratureService>();
+        service.AddTransient<Interfaces.v1.ILiteratureService, Services.v1.LiteratureService>();
     }
 }

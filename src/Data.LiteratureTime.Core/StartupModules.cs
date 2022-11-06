@@ -1,6 +1,5 @@
 namespace Data.LiteratureTime.Core;
 
-using Data.LiteratureTime.Core.Workers;
 using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.AspNetCore.Routing;
@@ -13,7 +12,8 @@ public class StartupModule : IStartupModule
         var redisConnection = app.ServiceProvider.GetRequiredService<RedisConnection>();
         redisConnection.Initalize();
 
-        var literatureDataWorker = app.ServiceProvider.GetRequiredService<LiteratureDataWorker>();
+        var literatureDataWorker =
+            app.ServiceProvider.GetRequiredService<Workers.v1.LiteratureDataWorker>();
         literatureDataWorker.Run();
     }
 }
