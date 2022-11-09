@@ -11,4 +11,8 @@
         <ProjectReference Include="..\Irrbloss\Irrbloss.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Markdig" Version="0.30.4" />
+    </ItemGroup>
+
 </Project>
