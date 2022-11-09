@@ -11,5 +11,9 @@ public class ServiceModule : IServiceModule
             Core.Interfaces.v1.ILiteratureProvider,
             Providers.v1.LiteratureProvider
         >();
+        service.AddTransient<
+            Core.Interfaces.v2.ILiteratureProvider,
+            Providers.v2.LiteratureProvider
+        >();
     }
 }

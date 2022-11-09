@@ -1,6 +1,6 @@
-namespace Data.LiteratureTime.Core.Workers.v1;
+namespace Data.LiteratureTime.Core.Workers.v2;
 
-using Data.LiteratureTime.Core.Interfaces.v1;
+using Data.LiteratureTime.Core.Interfaces.v2;
 using Data.LiteratureTime.Core.Models;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ public class LiteratureDataWorker
     private readonly SemaphoreSlim _lockSemaphore = new(initialCount: 1, maxCount: 1);
 
     private const string COMPLETETMARKER = "LITERATURE_COMPLETE_MARKER";
-    private const string KEY_PREFIX = "LIT";
+    private const string KEY_PREFIX = "LIT_V2";
 
     private readonly ILogger<LiteratureDataWorker> _logger;
     private readonly RedisConnection _redisConnection;
