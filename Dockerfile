@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0-focal-arm64v8 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-jammy-arm64v8 AS base
 WORKDIR /app
 EXPOSE 80
 
 ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0-jammy AS build
 WORKDIR "/"
 COPY "data.literaturetime.sln" "./"
 COPY ["src/Data.LiteratureTime.API/Data.LiteratureTime.API.csproj", "./src/Data.LiteratureTime.API/"]
