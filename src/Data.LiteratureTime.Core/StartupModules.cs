@@ -12,10 +12,6 @@ public class StartupModule : IStartupModule
         var redisConnection = app.ServiceProvider.GetRequiredService<RedisConnection>();
         redisConnection.Initalize();
 
-        var literatureDataWorker =
-            app.ServiceProvider.GetRequiredService<Workers.v1.LiteratureDataWorker>();
-        literatureDataWorker.Run();
-
         var literatureDataWorker2 =
             app.ServiceProvider.GetRequiredService<Workers.v2.LiteratureDataWorker>();
         literatureDataWorker2.Run();
