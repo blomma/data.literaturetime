@@ -1,7 +1,7 @@
 namespace Data.LiteratureTime.Core.Services.v2;
 
 using System.Security.Cryptography;
-using System.Text;
+using Data.LiteratureTime.Core.Crypto;
 using Data.LiteratureTime.Core.Interfaces.v2;
 using Data.LiteratureTime.Core.Models;
 using Markdig;
@@ -27,7 +27,10 @@ public class LiteratureService : ILiteratureService
             try
             {
                 var (time, literatureTime, quote, title, author) = ParseRow(row);
-                var hash = GetHash(sha256Hash, $"{time}{literatureTime}{quote}{title}{author}");
+                var hash = Hashing.GetHash(
+                    sha256Hash,
+                    $"{time}{literatureTime}{quote}{title}{author}"
+                );
 
                 var qi = quote.ToLowerInvariant().IndexOf(literatureTime.ToLowerInvariant());
                 var quoteFirst = qi > 0 ? quote[..qi] : "";
@@ -99,19 +102,5 @@ public class LiteratureService : ILiteratureService
         result = result.TrimEnd();
 
         return result;
-    }
-
-    private static string GetHash(HashAlgorithm hashAlgorithm, string input)
-    {
-        byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-        var stringBuilder = new StringBuilder();
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            stringBuilder.Append(data[i].ToString("x2"));
-        }
-
-        return stringBuilder.ToString();
     }
 }
