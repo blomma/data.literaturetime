@@ -5,11 +5,14 @@ using Data.LiteratureTime.Core.Models;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Irrbloss;
+using System.Threading.Tasks;
 
 public class LiteratureDataWorker
 {
     private readonly ILiteratureService _literatureService;
-    private Timer? timer;
+    private Timer? intervalTimer;
+    private Timer? sanityCheckTimer;
+
     private readonly SemaphoreSlim _lockSemaphore = new(initialCount: 1, maxCount: 1);
 
     private const string COMPLETETMARKER = "LITERATURE_COMPLETE_MARKER";
@@ -31,16 +34,71 @@ public class LiteratureDataWorker
 
     ~LiteratureDataWorker()
     {
-        timer?.Dispose();
+        intervalTimer?.Dispose();
+        sanityCheckTimer?.Dispose();
 
         _lockSemaphore.Dispose();
     }
 
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
 
+    private async Task PopulateAsync()
+    {
+        _logger.LogInformation("Repopulating cache");
+
+        var literatureTimes = await _literatureService.GetLiteratureTimesAsync();
+
+        ILookup<string, LiteratureTime> lookup = literatureTimes.ToLookup(o => o.Time);
+        foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
+        {
+            var jsonData = JsonSerializer.Serialize(literatureTimesGroup.ToList());
+            _ = await _redisConnection.BasicRetryAsync(
+                (db) =>
+                    db.StringSetAsync(
+                        PrefixKey(literatureTimesGroup.Key),
+                        jsonData,
+                        TimeSpan.FromHours(2)
+                    )
+            );
+        }
+
+        _logger.LogInformation("Done repopulating cache");
+    }
+
     public void Run()
     {
-        timer = new Timer(
+        intervalTimer = new Timer(
+            async (timerState) =>
+            {
+                try
+                {
+                    if (!await _lockSemaphore.WaitAsync(0))
+                        return;
+                }
+                catch
+                {
+                    return;
+                }
+
+                try
+                {
+                    await PopulateAsync();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Caught exception");
+                }
+                finally
+                {
+                    _lockSemaphore.Release();
+                }
+            },
+            null,
+            0,
+            (int)TimeSpan.FromHours(1).TotalMilliseconds
+        );
+
+        sanityCheckTimer = new Timer(
             async (timerState) =>
             {
                 try
@@ -56,7 +114,6 @@ public class LiteratureDataWorker
                 try
                 {
                     var completeMarker = PrefixKey(COMPLETETMARKER);
-
                     if (
                         await _redisConnection.BasicRetryAsync(
                             (db) => db.KeyExistsAsync(completeMarker)
@@ -64,25 +121,15 @@ public class LiteratureDataWorker
                     )
                         return;
 
-                    _logger.LogInformation(
-                        "COMPLETETMARKER:{completeMarker} not found",
-                        completeMarker
-                    );
-                    var literatureTimes = await _literatureService.GetLiteratureTimesAsync();
+                    _logger.LogInformation("Marker not found");
 
-                    ILookup<string, LiteratureTime> lookup = literatureTimes.ToLookup(o => o.Time);
-                    foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
-                    {
-                        var jsonData = JsonSerializer.Serialize(literatureTimesGroup.ToList());
-                        var result = await _redisConnection.BasicRetryAsync(
-                            (db) => db.StringSetAsync(PrefixKey(literatureTimesGroup.Key), jsonData)
-                        );
-                    }
+                    await PopulateAsync();
 
                     await _redisConnection.BasicRetryAsync(
                         (db) => db.StringSetAsync(completeMarker, completeMarker)
                     );
-                    _logger.LogInformation("COMPLETETMARKER:{completeMarker} set", completeMarker);
+
+                    _logger.LogInformation("Writing marker");
                 }
                 catch (Exception e)
                 {
@@ -95,7 +142,7 @@ public class LiteratureDataWorker
             },
             null,
             0,
-            5000
+            (int)TimeSpan.FromSeconds(5).TotalMilliseconds
         );
     }
 }
