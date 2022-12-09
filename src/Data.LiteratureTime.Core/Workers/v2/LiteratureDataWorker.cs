@@ -53,12 +53,12 @@ public class LiteratureDataWorker
         {
             var jsonData = JsonSerializer.Serialize(literatureTimesGroup.ToList());
             _ = await _redisConnection.BasicRetryAsync(
-                (db) =>
-                    db.StringSetAsync(
-                        PrefixKey(literatureTimesGroup.Key),
-                        jsonData,
-                        TimeSpan.FromHours(2)
-                    )
+                (db, state) =>
+                {
+                    var (key, data, expiry) = state;
+                    return db.StringSetAsync(key, data, expiry);
+                },
+                (PrefixKey(literatureTimesGroup.Key), jsonData, TimeSpan.FromHours(2))
             );
         }
 
@@ -116,7 +116,11 @@ public class LiteratureDataWorker
                     var completeMarker = PrefixKey(COMPLETETMARKER);
                     if (
                         await _redisConnection.BasicRetryAsync(
-                            (db) => db.KeyExistsAsync(completeMarker)
+                            (db, marker) =>
+                            {
+                                return db.KeyExistsAsync(marker);
+                            },
+                            completeMarker
                         )
                     )
                         return;
@@ -126,7 +130,11 @@ public class LiteratureDataWorker
                     await PopulateAsync();
 
                     await _redisConnection.BasicRetryAsync(
-                        (db) => db.StringSetAsync(completeMarker, completeMarker)
+                        (db, marker) =>
+                        {
+                            return db.StringSetAsync(marker, marker);
+                        },
+                        completeMarker
                     );
 
                     _logger.LogInformation("Writing marker");
