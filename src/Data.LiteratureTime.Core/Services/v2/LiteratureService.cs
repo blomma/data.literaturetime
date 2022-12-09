@@ -20,38 +20,19 @@ public class LiteratureService : ILiteratureService
         var rows = await _literatureProvider.GetLiteratureTimesAsync();
         using SHA256 sha256Hash = SHA256.Create();
 
-        List<LiteratureTime> literatureTimes = new();
-        int exceptionCount = 0;
+        List<LiteratureTime> literatureTimes = new(rows.Length);
         foreach (var row in rows)
         {
-            try
-            {
-                var (time, literatureTime, quote, title, author) = ParseRow(row);
-                var hash = Hashing.GetHash(
-                    sha256Hash,
-                    $"{time}{literatureTime}{quote}{title}{author}"
-                );
+            var (time, literatureTime, quote, title, author) = ParseRow(row);
+            var hash = Hashing.GetHash(sha256Hash, $"{time}{literatureTime}{quote}{title}{author}");
 
-                var qi = quote.ToLowerInvariant().IndexOf(literatureTime.ToLowerInvariant());
-                var quoteFirst = qi > 0 ? quote[..qi] : "";
-                var quoteLast = quote[(qi + literatureTime.Length)..];
+            var qi = quote.ToLowerInvariant().IndexOf(literatureTime.ToLowerInvariant());
+            var quoteFirst = qi > 0 ? quote[..qi] : "";
+            var quoteLast = quote[(qi + literatureTime.Length)..];
 
-                literatureTimes.Add(
-                    new LiteratureTime(
-                        time,
-                        quoteFirst,
-                        literatureTime,
-                        quoteLast,
-                        title,
-                        author,
-                        hash
-                    )
-                );
-            }
-            catch
-            {
-                exceptionCount += 1;
-            }
+            literatureTimes.Add(
+                new LiteratureTime(time, quoteFirst, literatureTime, quoteLast, title, author, hash)
+            );
         }
 
         return literatureTimes;
