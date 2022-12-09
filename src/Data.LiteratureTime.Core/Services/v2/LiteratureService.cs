@@ -17,7 +17,7 @@ public class LiteratureService : ILiteratureService
 
     public async Task<List<LiteratureTime>> GetLiteratureTimesAsync()
     {
-        var rows = await _literatureProvider.GetLiteratureTimesAsync();
+        var rows = await _literatureProvider.GetLiteratureTimesAsync().ConfigureAwait(false);
         using SHA256 sha256Hash = SHA256.Create();
 
         List<LiteratureTime> literatureTimes = new(rows.Length);
@@ -26,7 +26,7 @@ public class LiteratureService : ILiteratureService
             var (time, literatureTime, quote, title, author) = ParseRow(row);
             var hash = Hashing.GetHash(sha256Hash, $"{time}{literatureTime}{quote}{title}{author}");
 
-            var qi = quote.ToLowerInvariant().IndexOf(literatureTime.ToLowerInvariant());
+            var qi = quote.IndexOf(literatureTime, StringComparison.InvariantCultureIgnoreCase);
             var quoteFirst = qi > 0 ? quote[..qi] : "";
             var quoteLast = quote[(qi + literatureTime.Length)..];
 
@@ -65,20 +65,20 @@ public class LiteratureService : ILiteratureService
 
     private static string SmartyPants(string input)
     {
-        input = input.Replace("<br/>", "\n");
+        input = input.Replace("<br/>", "\n", StringComparison.InvariantCultureIgnoreCase);
 
         var pipeline = new MarkdownPipelineBuilder().UseSmartyPants().Build();
         var result = Markdown.ToPlainText(input, pipeline);
 
-        result = result.Replace("&lsquo;", "‘");
-        result = result.Replace("&rsquo;", "’");
-        result = result.Replace("&ldquo;", "“");
-        result = result.Replace("&rdquo;", "”");
-        result = result.Replace("&laquo;", "«");
-        result = result.Replace("&raquo;", "»");
-        result = result.Replace("&hellip;", "…");
-        result = result.Replace("&ndash;", "–");
-        result = result.Replace("&mdash;", "—");
+        result = result.Replace("&lsquo;", "‘", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&rsquo;", "’", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&ldquo;", "“", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&rdquo;", "”", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&laquo;", "«", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&raquo;", "»", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&hellip;", "…", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&ndash;", "–", StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("&mdash;", "—", StringComparison.InvariantCultureIgnoreCase);
 
         result = result.TrimEnd();
 
