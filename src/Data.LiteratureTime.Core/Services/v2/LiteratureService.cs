@@ -17,7 +17,7 @@ public class LiteratureService : ILiteratureService
 
     public async Task<List<LiteratureTime>> GetLiteratureTimesAsync()
     {
-        var rows = await _literatureProvider.GetLiteratureTimesAsync().ConfigureAwait(false);
+        var rows = await _literatureProvider.GetLiteratureTimesAsync();
         using SHA256 sha256Hash = SHA256.Create();
 
         List<LiteratureTime> literatureTimes = new(rows.Length);

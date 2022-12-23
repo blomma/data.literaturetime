@@ -38,24 +38,20 @@ public class LiteratureDataWorker
     {
         _logger.LogInformation("Repopulating cache");
 
-        var literatureTimes = await _literatureService
-            .GetLiteratureTimesAsync()
-            .ConfigureAwait(false);
+        var literatureTimes = await _literatureService.GetLiteratureTimesAsync();
 
         ILookup<string, LiteratureTime> lookup = literatureTimes.ToLookup(o => o.Time);
         foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
         {
             var jsonData = JsonSerializer.Serialize(literatureTimesGroup.ToList());
-            _ = await _redisConnection
-                .BasicRetryAsync(
-                    (db, state) =>
-                    {
-                        var (key, data, expiry) = state;
-                        return db.StringSetAsync(key, data, expiry);
-                    },
-                    (PrefixKey(literatureTimesGroup.Key), jsonData, TimeSpan.FromHours(2))
-                )
-                .ConfigureAwait(false);
+            _ = await _redisConnection.BasicRetryAsync(
+                (db, state) =>
+                {
+                    var (key, data, expiry) = state;
+                    return db.StringSetAsync(key, data, expiry);
+                },
+                (PrefixKey(literatureTimesGroup.Key), jsonData, TimeSpan.FromHours(2))
+            );
         }
 
         _logger.LogInformation("Done repopulating cache");
@@ -68,7 +64,7 @@ public class LiteratureDataWorker
             {
                 try
                 {
-                    if (!await _lockSemaphore.WaitAsync(0).ConfigureAwait(false))
+                    if (!await _lockSemaphore.WaitAsync(0))
                         return;
                 }
                 catch
@@ -78,7 +74,7 @@ public class LiteratureDataWorker
 
                 try
                 {
-                    await PopulateAsync().ConfigureAwait(false);
+                    await PopulateAsync();
                 }
                 catch (Exception e)
                 {
@@ -99,7 +95,7 @@ public class LiteratureDataWorker
             {
                 try
                 {
-                    if (!await _lockSemaphore.WaitAsync(0).ConfigureAwait(false))
+                    if (!await _lockSemaphore.WaitAsync(0))
                         return;
                 }
                 catch
@@ -111,31 +107,27 @@ public class LiteratureDataWorker
                 {
                     var completeMarker = PrefixKey(COMPLETETMARKER);
                     if (
-                        await _redisConnection
-                            .BasicRetryAsync(
-                                (db, marker) =>
-                                {
-                                    return db.KeyExistsAsync(marker);
-                                },
-                                completeMarker
-                            )
-                            .ConfigureAwait(false)
+                        await _redisConnection.BasicRetryAsync(
+                            (db, marker) =>
+                            {
+                                return db.KeyExistsAsync(marker);
+                            },
+                            completeMarker
+                        )
                     )
                         return;
 
                     _logger.LogInformation("Marker not found");
 
-                    await PopulateAsync().ConfigureAwait(false);
+                    await PopulateAsync();
 
-                    await _redisConnection
-                        .BasicRetryAsync(
-                            (db, marker) =>
-                            {
-                                return db.StringSetAsync(marker, marker);
-                            },
-                            completeMarker
-                        )
-                        .ConfigureAwait(false);
+                    await _redisConnection.BasicRetryAsync(
+                        (db, marker) =>
+                        {
+                            return db.StringSetAsync(marker, marker);
+                        },
+                        completeMarker
+                    );
 
                     _logger.LogInformation("Writing marker");
                 }
