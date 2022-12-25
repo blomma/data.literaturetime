@@ -12,5 +12,7 @@ public class ServiceModule : IServiceModule
             Core.Interfaces.v2.ILiteratureProvider,
             Providers.v2.LiteratureProvider
         >();
+
+        service.AddTransient<Core.Interfaces.v2.ICacheProvider, Providers.v2.CacheProvider>();
     }
 }

@@ -1,9 +1,9 @@
 namespace Data.LiteratureTime.Core;
 
-using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 public class ServiceModule : IServiceModule
 {
@@ -15,12 +15,12 @@ public class ServiceModule : IServiceModule
             throw new Exception();
         }
 
-        service.AddSingleton<Workers.v2.LiteratureDataWorker>();
-        service.AddSingleton(s =>
+        service.AddSingleton<IConnectionMultiplexer>(c =>
         {
-            return new RedisConnection(connectionString);
+            return ConnectionMultiplexer.Connect(connectionString);
         });
 
+        service.AddSingleton<Workers.v2.LiteratureDataWorker>();
         service.AddTransient<Interfaces.v2.ILiteratureService, Services.v2.LiteratureService>();
     }
 }

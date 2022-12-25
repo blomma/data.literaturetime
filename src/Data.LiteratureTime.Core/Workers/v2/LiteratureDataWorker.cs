@@ -2,9 +2,7 @@ namespace Data.LiteratureTime.Core.Workers.v2;
 
 using Data.LiteratureTime.Core.Interfaces.v2;
 using Data.LiteratureTime.Core.Models;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Irrbloss;
 using System.Threading.Tasks;
 
 public class LiteratureDataWorker
@@ -19,17 +17,18 @@ public class LiteratureDataWorker
     private const string KEY_PREFIX = "LIT_V2";
 
     private readonly ILogger<LiteratureDataWorker> _logger;
-    private readonly RedisConnection _redisConnection;
+
+    private readonly ICacheProvider _cacheProvider;
 
     public LiteratureDataWorker(
         ILiteratureService literatureService,
         ILogger<LiteratureDataWorker> logger,
-        RedisConnection redisConnection
+        ICacheProvider cacheProvider
     )
     {
         _literatureService = literatureService;
         _logger = logger;
-        _redisConnection = redisConnection;
+        _cacheProvider = cacheProvider;
     }
 
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
@@ -43,15 +42,8 @@ public class LiteratureDataWorker
         ILookup<string, LiteratureTime> lookup = literatureTimes.ToLookup(o => o.Time);
         foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
         {
-            var jsonData = JsonSerializer.Serialize(literatureTimesGroup.ToList());
-            _ = await _redisConnection.BasicRetryAsync(
-                (db, state) =>
-                {
-                    var (key, data, expiry) = state;
-                    return db.StringSetAsync(key, data, expiry);
-                },
-                (PrefixKey(literatureTimesGroup.Key), jsonData, TimeSpan.FromHours(2))
-            );
+            var key = PrefixKey(literatureTimesGroup.Key);
+            await _cacheProvider.Set(key, literatureTimesGroup.ToList(), TimeSpan.FromHours(2));
         }
 
         _logger.LogInformation("Done repopulating cache");
@@ -106,28 +98,15 @@ public class LiteratureDataWorker
                 try
                 {
                     var completeMarker = PrefixKey(COMPLETETMARKER);
-                    if (
-                        await _redisConnection.BasicRetryAsync(
-                            (db, marker) =>
-                            {
-                                return db.KeyExistsAsync(marker);
-                            },
-                            completeMarker
-                        )
-                    )
+                    var keyExists = await _cacheProvider.Exists(completeMarker);
+                    if (keyExists)
                         return;
 
                     _logger.LogInformation("Marker not found");
 
                     await PopulateAsync();
 
-                    await _redisConnection.BasicRetryAsync(
-                        (db, marker) =>
-                        {
-                            return db.StringSetAsync(marker, marker);
-                        },
-                        completeMarker
-                    );
+                    await _cacheProvider.Set(completeMarker, completeMarker);
 
                     _logger.LogInformation("Writing marker");
                 }
