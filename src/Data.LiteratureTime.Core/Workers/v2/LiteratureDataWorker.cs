@@ -43,7 +43,11 @@ public class LiteratureDataWorker
         foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
         {
             var key = PrefixKey(literatureTimesGroup.Key);
-            await _cacheProvider.Set(key, literatureTimesGroup.ToList(), TimeSpan.FromHours(2));
+            _ = await _cacheProvider.SetAsync(
+                key,
+                literatureTimesGroup.ToList(),
+                TimeSpan.FromHours(2)
+            );
         }
 
         _logger.LogInformation("Done repopulating cache");
@@ -98,7 +102,7 @@ public class LiteratureDataWorker
                 try
                 {
                     var completeMarker = PrefixKey(COMPLETETMARKER);
-                    var keyExists = await _cacheProvider.Exists(completeMarker);
+                    var keyExists = await _cacheProvider.ExistsAsync(completeMarker);
                     if (keyExists)
                         return;
 
@@ -106,7 +110,7 @@ public class LiteratureDataWorker
 
                     await PopulateAsync();
 
-                    await _cacheProvider.Set(completeMarker, completeMarker);
+                    await _cacheProvider.SetAsync(completeMarker, completeMarker);
 
                     _logger.LogInformation("Writing marker");
                 }
