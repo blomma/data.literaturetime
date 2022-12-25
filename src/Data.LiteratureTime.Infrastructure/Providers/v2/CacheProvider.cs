@@ -13,15 +13,15 @@ public class CacheProvider : ICacheProvider
         _connectionMultiplexer = connectionMultiplexer;
     }
 
-    public async Task Set<T>(string key, T data, TimeSpan? expiration = null)
+    public Task<bool> SetAsync<T>(string key, T data, TimeSpan? expiration = null)
     {
         var db = _connectionMultiplexer.GetDatabase();
         var jsonData = JsonSerializer.Serialize(data);
 
-        await db.StringSetAsync(key, jsonData, expiration);
+        return db.StringSetAsync(key, jsonData, expiration);
     }
 
-    public async Task<bool> Exists(string key)
+    public async Task<bool> ExistsAsync(string key)
     {
         var db = _connectionMultiplexer.GetDatabase();
 
