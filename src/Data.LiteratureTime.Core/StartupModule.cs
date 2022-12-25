@@ -10,16 +10,6 @@ public class StartupModule : IStartupModule
 {
     public void AddStartups(IEndpointRouteBuilder app)
     {
-        IConfiguration configuration = app.ServiceProvider.GetRequiredService<IConfiguration>();
-        var connectionString = configuration.GetConnectionString("Redis");
-
-        if (connectionString == null) {
-            throw new Exception();
-        }
-
-        var redisConnection = app.ServiceProvider.GetRequiredService<RedisConnection>();
-        redisConnection.Initalize(connectionString);
-
         var literatureDataWorker2 =
             app.ServiceProvider.GetRequiredService<Workers.v2.LiteratureDataWorker>();
         literatureDataWorker2.Run();

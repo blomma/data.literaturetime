@@ -1,5 +1,4 @@
 using Irrbloss.Extensions;
-using Irrbloss.Middlewares;
 using Microsoft.AspNetCore.HttpLogging;
 using Serilog;
 using Serilog.Events;
@@ -24,7 +23,7 @@ builder.Services.AddMvcCore();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddServiceModules();
+builder.Services.AddServiceModules(builder.Configuration);
 builder.Services.AddRouterModules();
 
 builder.Services.AddManagedResponseException();
