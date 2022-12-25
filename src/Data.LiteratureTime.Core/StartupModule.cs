@@ -1,9 +1,7 @@
 namespace Data.LiteratureTime.Core;
 
-using Irrbloss;
 using Irrbloss.Interfaces;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 public class StartupModule : IStartupModule
