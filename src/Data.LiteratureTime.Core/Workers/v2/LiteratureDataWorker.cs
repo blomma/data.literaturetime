@@ -40,15 +40,21 @@ public class LiteratureDataWorker
         var literatureTimes = await _literatureService.GetLiteratureTimesAsync();
 
         ILookup<string, LiteratureTime> lookup = literatureTimes.ToLookup(o => o.Time);
+
+        var tasks = new List<Task>(lookup.Count);
         foreach (IGrouping<string, LiteratureTime> literatureTimesGroup in lookup)
         {
             var key = PrefixKey(literatureTimesGroup.Key);
-            _ = await _cacheProvider.SetAsync(
+            var task = _cacheProvider.SetAsync(
                 key,
                 literatureTimesGroup.ToList(),
                 TimeSpan.FromHours(2)
             );
+
+            tasks.Add(task);
         }
+
+        Task.WaitAll(tasks.ToArray());
 
         _logger.LogInformation("Done repopulating cache");
     }
