@@ -1,6 +1,6 @@
 namespace Data.LiteratureTime.Core.Workers.v2;
 
-using Data.LiteratureTime.Core.Interfaces.v2;
+using Data.LiteratureTime.Core.Interfaces;
 using Data.LiteratureTime.Core.Models;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;

@@ -20,11 +20,9 @@ public class ServiceModule : IServiceModule
             return ConnectionMultiplexer.Connect(connectionString);
         });
 
-        service.AddTransient<
-            Core.Interfaces.v2.ILiteratureProvider,
-            Providers.v2.LiteratureProvider
-        >();
+        service.AddTransient<Core.Interfaces.ILiteratureProvider, Providers.LiteratureProvider>();
 
-        service.AddTransient<Core.Interfaces.v2.ICacheProvider, Providers.v2.CacheProvider>();
+        service.AddTransient<Core.Interfaces.ICacheProvider, Providers.CacheProvider>();
+        service.AddTransient<Core.Interfaces.IBusProvider, Providers.BusProvider>();
     }
 }

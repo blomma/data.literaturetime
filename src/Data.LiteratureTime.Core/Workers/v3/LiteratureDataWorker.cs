@@ -1,6 +1,7 @@
 namespace Data.LiteratureTime.Core.Workers.v3;
 
-using Data.LiteratureTime.Core.Interfaces.v2;
+using Data.LiteratureTime.Core.Interfaces;
+using Data.LiteratureTime.Core.Models;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
@@ -12,22 +13,25 @@ public class LiteratureDataWorker
 
     private readonly SemaphoreSlim _lockSemaphore = new(initialCount: 1, maxCount: 1);
 
-    private const string COMPLETETMARKER = "LITERATURE_COMPLETE_MARKER";
     private const string KEY_PREFIX = "LIT_V3";
+    private const string INDEXMARKER = "INDEX";
 
     private readonly ILogger<LiteratureDataWorker> _logger;
 
     private readonly ICacheProvider _cacheProvider;
+    private readonly IBusProvider _busProvider;
 
     public LiteratureDataWorker(
         ILiteratureService literatureService,
         ILogger<LiteratureDataWorker> logger,
-        ICacheProvider cacheProvider
+        ICacheProvider cacheProvider,
+        IBusProvider busProvider
     )
     {
         _literatureService = literatureService;
         _logger = logger;
         _cacheProvider = cacheProvider;
+        _busProvider = busProvider;
     }
 
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
@@ -47,6 +51,16 @@ public class LiteratureDataWorker
         }
 
         Task.WaitAll(tasks.ToArray());
+
+        var grouped = literatureTimes.Select(s => new LiteratureTimeIndex(s.Time, s.Hash));
+        var indexKey = PrefixKey(INDEXMARKER);
+        var success = await _cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromHours(2));
+        if (!success)
+        {
+            throw new Exception("Unable to save index");
+        }
+
+        await _busProvider.PublishAsync("literature", "index");
 
         _logger.LogInformation("Done repopulating cache");
     }
@@ -99,18 +113,14 @@ public class LiteratureDataWorker
 
                 try
                 {
-                    var completeMarker = PrefixKey(COMPLETETMARKER);
-                    var keyExists = await _cacheProvider.ExistsAsync(completeMarker);
+                    var indexKey = PrefixKey(INDEXMARKER);
+                    var keyExists = await _cacheProvider.ExistsAsync(indexKey);
                     if (keyExists)
                         return;
 
-                    _logger.LogInformation("Marker not found");
+                    _logger.LogInformation("Index not found, populating cache");
 
                     await PopulateAsync();
-
-                    await _cacheProvider.SetAsync(completeMarker, completeMarker);
-
-                    _logger.LogInformation("Writing marker");
                 }
                 catch (Exception e)
                 {

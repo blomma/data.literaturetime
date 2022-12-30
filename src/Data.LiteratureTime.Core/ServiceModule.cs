@@ -10,6 +10,6 @@ public class ServiceModule : IServiceModule
     {
         service.AddSingleton<Workers.v2.LiteratureDataWorker>();
         service.AddSingleton<Workers.v3.LiteratureDataWorker>();
-        service.AddTransient<Interfaces.v2.ILiteratureService, Services.v2.LiteratureService>();
+        service.AddTransient<Interfaces.ILiteratureService, Services.LiteratureService>();
     }
 }

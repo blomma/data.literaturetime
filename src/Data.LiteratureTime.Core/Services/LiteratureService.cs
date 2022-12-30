@@ -1,8 +1,8 @@
-namespace Data.LiteratureTime.Core.Services.v2;
+namespace Data.LiteratureTime.Core.Services;
 
 using System.Security.Cryptography;
 using Data.LiteratureTime.Core.Crypto;
-using Data.LiteratureTime.Core.Interfaces.v2;
+using Data.LiteratureTime.Core.Interfaces;
 using Data.LiteratureTime.Core.Models;
 using Markdig;
 
