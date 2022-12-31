@@ -8,7 +8,6 @@ public class ServiceModule : IServiceModule
 {
     public void AddServices(IServiceCollection service, IConfiguration configuration)
     {
-        service.AddSingleton<Workers.v2.LiteratureDataWorker>();
         service.AddSingleton<Workers.v3.LiteratureDataWorker>();
         service.AddTransient<Interfaces.ILiteratureService, Services.LiteratureService>();
     }
