@@ -16,7 +16,8 @@
     <ItemGroup>
         <ProjectReference Include="..\Irrbloss\Irrbloss.csproj" />
         <ProjectReference Include="..\Data.LiteratureTime.Core\Data.LiteratureTime.Core.csproj" />
-        <ProjectReference Include="..\Data.LiteratureTime.Infrastructure\Data.LiteratureTime.Infrastructure.csproj" />
+        <ProjectReference
+            Include="..\Data.LiteratureTime.Infrastructure\Data.LiteratureTime.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
