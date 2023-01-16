@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Data.LiteratureTime.API/bin/Debug/net7.0/Data.LiteratureTime.API.dll",
+            "program": "${workspaceFolder}/src/Data.LiteratureTime.Worker/bin/Debug/net7.0/Data.LiteratureTime.Worker.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Data.LiteratureTime.API",
+            "cwd": "${workspaceFolder}/src/Data.LiteratureTime.Worker",
             "stopAtEntry": false,
             // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
             "env": {

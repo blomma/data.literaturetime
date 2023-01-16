@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Data.LiteratureTime.API/Data.LiteratureTime.API.csproj",
+                "${workspaceFolder}/src/Data.LiteratureTime.Worker/Data.LiteratureTime.Worker.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/Data.LiteratureTime.API/Data.LiteratureTime.API.csproj",
+                "${workspaceFolder}/src/Data.LiteratureTime.Worker/Data.LiteratureTime.Worker.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/Data.LiteratureTime.API/Data.LiteratureTime.API.csproj"
+                "${workspaceFolder}/src/Data.LiteratureTime.Worker/Data.LiteratureTime.Worker.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
