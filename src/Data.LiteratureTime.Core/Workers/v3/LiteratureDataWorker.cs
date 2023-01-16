@@ -2,12 +2,13 @@ namespace Data.LiteratureTime.Core.Workers.v3;
 
 using Data.LiteratureTime.Core.Interfaces;
 using Data.LiteratureTime.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-public class LiteratureDataWorker
+public class LiteratureDataWorker : IHostedService
 {
-    private readonly ILiteratureService _literatureService;
     private Timer? intervalTimer;
     private Timer? sanityCheckTimer;
 
@@ -17,21 +18,15 @@ public class LiteratureDataWorker
     private const string INDEXMARKER = "INDEX";
 
     private readonly ILogger<LiteratureDataWorker> _logger;
-
-    private readonly ICacheProvider _cacheProvider;
-    private readonly IBusProvider _busProvider;
+    private readonly IServiceProvider _serviceProvider;
 
     public LiteratureDataWorker(
-        ILiteratureService literatureService,
         ILogger<LiteratureDataWorker> logger,
-        ICacheProvider cacheProvider,
-        IBusProvider busProvider
+        IServiceProvider serviceProvider
     )
     {
-        _literatureService = literatureService;
         _logger = logger;
-        _cacheProvider = cacheProvider;
-        _busProvider = busProvider;
+        _serviceProvider = serviceProvider;
     }
 
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
@@ -40,13 +35,17 @@ public class LiteratureDataWorker
     {
         _logger.LogInformation("Repopulating cache");
 
-        var literatureTimes = await _literatureService.GetLiteratureTimesAsync();
+        using var scope = _serviceProvider.CreateScope();
+        var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
+        var literatureService = scope.ServiceProvider.GetRequiredService<ILiteratureService>();
+
+        var literatureTimes = await literatureService.GetLiteratureTimesAsync();
         var tasks = new List<Task>(literatureTimes.Count);
 
         foreach (var literatureTime in literatureTimes)
         {
             var key = PrefixKey(literatureTime.Hash);
-            var task = _cacheProvider.SetAsync(key, literatureTime, TimeSpan.FromHours(2));
+            var task = cacheProvider.SetAsync(key, literatureTime, TimeSpan.FromHours(2));
             tasks.Add(task);
         }
 
@@ -54,22 +53,28 @@ public class LiteratureDataWorker
 
         var grouped = literatureTimes.Select(s => new LiteratureTimeIndex(s.Time, s.Hash));
         var indexKey = PrefixKey(INDEXMARKER);
-        var success = await _cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromHours(2));
+        var success = await cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromHours(2));
         if (!success)
         {
             throw new Exception("Unable to save index");
         }
 
-        await _busProvider.PublishAsync("literature", "index");
+        var busProvider = scope.ServiceProvider.GetRequiredService<IBusProvider>();
+        await busProvider.PublishAsync("literature", "index");
 
         _logger.LogInformation("Done repopulating cache");
     }
 
-    public void Run()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         intervalTimer = new Timer(
             async (timerState) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     if (!await _lockSemaphore.WaitAsync(0))
@@ -101,6 +106,11 @@ public class LiteratureDataWorker
         sanityCheckTimer = new Timer(
             async (timerState) =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     if (!await _lockSemaphore.WaitAsync(0))
@@ -113,8 +123,10 @@ public class LiteratureDataWorker
 
                 try
                 {
+                    using var scope = _serviceProvider.CreateScope();
+                    var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
                     var indexKey = PrefixKey(INDEXMARKER);
-                    var keyExists = await _cacheProvider.ExistsAsync(indexKey);
+                    var keyExists = await cacheProvider.ExistsAsync(indexKey);
                     if (keyExists)
                         return;
 
@@ -135,5 +147,15 @@ public class LiteratureDataWorker
             0,
             (int)TimeSpan.FromSeconds(5).TotalMilliseconds
         );
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        intervalTimer?.Change(Timeout.Infinite, 0);
+        sanityCheckTimer?.Change(Timeout.Infinite, 0);
+
+        return Task.CompletedTask;
     }
 }
