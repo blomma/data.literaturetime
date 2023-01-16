@@ -55,6 +55,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseManagedResponseException();
 app.UseRouterModules();
-app.UseStartupModules();
 
 app.Run();
