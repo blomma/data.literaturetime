@@ -1,4 +1,4 @@
-namespace Data.LiteratureTime.Core.Workers.v3;
+namespace Data.LiteratureTime.Core.Workers;
 
 using Data.LiteratureTime.Core.Interfaces;
 using Data.LiteratureTime.Core.Models;
