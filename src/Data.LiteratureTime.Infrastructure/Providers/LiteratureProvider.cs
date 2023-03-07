@@ -13,6 +13,6 @@ public class LiteratureProvider : ILiteratureProvider
     private static string GetPathToQuotes()
     {
         var separator = Path.DirectorySeparatorChar;
-        return $"Data{separator}v2{separator}litclock_annotated.csv";
+        return $"Data{separator}litclock_annotated.csv";
     }
 }
