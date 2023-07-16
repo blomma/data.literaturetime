@@ -15,6 +15,8 @@ public class BusProvider : IBusProvider
     public async Task PublishAsync(string channel, string message)
     {
         var db = _connectionMultiplexer.GetDatabase();
-        _ = await db.PublishAsync(channel, message);
+        var redisChannel = RedisChannel.Literal(channel);
+
+        _ = await db.PublishAsync(redisChannel, message);
     }
 }
