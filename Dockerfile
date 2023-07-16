@@ -11,9 +11,7 @@ COPY ["src/Data.LiteratureTime.Worker/Data.LiteratureTime.Worker.csproj", "./src
 COPY ["src/Data.LiteratureTime.Core/Data.LiteratureTime.Core.csproj", "./src/Data.LiteratureTime.Core/"]
 COPY ["src/Data.LiteratureTime.Infrastructure/Data.LiteratureTime.Infrastructure.csproj", "./src/Data.LiteratureTime.Infrastructure/"]
 COPY ["src/Irrbloss/Irrbloss.csproj", "./src/Irrbloss/"]
-RUN dotnet restore
 COPY . .
-RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
 WORKDIR "/src/Data.LiteratureTime.Worker/."
