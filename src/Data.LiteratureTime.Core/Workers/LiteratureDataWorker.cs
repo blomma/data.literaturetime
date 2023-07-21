@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 public class LiteratureDataWorker : IHostedService
 {
-    private Timer? intervalTimer;
     private Timer? sanityCheckTimer;
 
     private readonly SemaphoreSlim _lockSemaphore = new(initialCount: 1, maxCount: 1);
@@ -67,42 +66,6 @@ public class LiteratureDataWorker : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        intervalTimer = new Timer(
-            async (timerState) =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                try
-                {
-                    if (!await _lockSemaphore.WaitAsync(0))
-                        return;
-                }
-                catch
-                {
-                    return;
-                }
-
-                try
-                {
-                    await PopulateAsync();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Caught exception");
-                }
-                finally
-                {
-                    _lockSemaphore.Release();
-                }
-            },
-            null,
-            0,
-            (int)TimeSpan.FromHours(1).TotalMilliseconds
-        );
-
         sanityCheckTimer = new Timer(
             async (timerState) =>
             {
@@ -153,7 +116,6 @@ public class LiteratureDataWorker : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        intervalTimer?.Change(Timeout.Infinite, 0);
         sanityCheckTimer?.Change(Timeout.Infinite, 0);
 
         return Task.CompletedTask;
