@@ -65,8 +65,6 @@ public class LiteratureService : ILiteratureService
 
     private static string SmartyPants(string input)
     {
-        input = input.Replace("<br/>", "\n", StringComparison.InvariantCultureIgnoreCase);
-
         var pipeline = new MarkdownPipelineBuilder().UseSmartyPants().Build();
         var result = Markdown.ToPlainText(input, pipeline);
 
