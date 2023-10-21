@@ -15,10 +15,9 @@ public class ServiceModule : IServiceModule
             throw new Exception();
         }
 
-        service.AddSingleton<IConnectionMultiplexer>(c =>
-        {
-            return ConnectionMultiplexer.Connect(connectionString);
-        });
+        service.AddSingleton<IConnectionMultiplexer>(
+            _ => ConnectionMultiplexer.Connect(connectionString)
+        );
 
         service.AddTransient<Core.Interfaces.ILiteratureProvider, Providers.LiteratureProvider>();
 
