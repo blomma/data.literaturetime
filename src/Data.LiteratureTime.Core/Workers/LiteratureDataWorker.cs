@@ -1,7 +1,7 @@
 namespace Data.LiteratureTime.Core.Workers;
 
-using Data.LiteratureTime.Core.Interfaces;
-using Data.LiteratureTime.Core.Models;
+using Interfaces;
+using Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 public class LiteratureDataWorker : IHostedService
 {
-    private Timer? sanityCheckTimer;
+    private Timer? _sanityCheckTimer;
 
     private readonly SemaphoreSlim _lockSemaphore = new(initialCount: 1, maxCount: 1);
 
@@ -66,46 +66,46 @@ public class LiteratureDataWorker : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        sanityCheckTimer = new Timer(
-            async (timerState) =>
+        async void Callback(object? _)
+        {
+            if (cancellationToken.IsCancellationRequested)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
+                return;
+            }
 
-                try
-                {
-                    if (!await _lockSemaphore.WaitAsync(0))
-                        return;
-                }
-                catch
-                {
-                    return;
-                }
+            try
+            {
+                if (!await _lockSemaphore.WaitAsync(0, cancellationToken)) return;
+            }
+            catch
+            {
+                return;
+            }
 
-                try
-                {
-                    using var scope = _serviceProvider.CreateScope();
-                    var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
-                    var indexKey = PrefixKey(INDEXMARKER);
-                    var keyExists = await cacheProvider.ExistsAsync(indexKey);
-                    if (keyExists)
-                        return;
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
+                var indexKey = PrefixKey(INDEXMARKER);
+                var keyExists = await cacheProvider.ExistsAsync(indexKey);
+                if (keyExists) return;
 
-                    _logger.LogInformation("Index not found, populating cache");
+                _logger.LogInformation("Index not found, populating cache");
 
-                    await PopulateAsync();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Caught exception");
-                }
-                finally
-                {
-                    _lockSemaphore.Release();
-                }
-            },
+                await PopulateAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Caught exception");
+            }
+            finally
+            {
+                _lockSemaphore.Release();
+            }
+        }
+
+        _sanityCheckTimer = new Timer(
+            Callback,
             null,
             0,
             (int)TimeSpan.FromSeconds(5).TotalMilliseconds
@@ -116,7 +116,7 @@ public class LiteratureDataWorker : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        sanityCheckTimer?.Change(Timeout.Infinite, 0);
+        _sanityCheckTimer?.Change(Timeout.Infinite, 0);
 
         return Task.CompletedTask;
     }

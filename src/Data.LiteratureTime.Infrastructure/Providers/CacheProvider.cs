@@ -21,10 +21,10 @@ public class CacheProvider : ICacheProvider
         return db.StringSetAsync(key, jsonData, expiration);
     }
 
-    public async Task<bool> ExistsAsync(string key)
+    public Task<bool> ExistsAsync(string key)
     {
         var db = _connectionMultiplexer.GetDatabase();
 
-        return await db.KeyExistsAsync(key);
+        return db.KeyExistsAsync(key);
     }
 }

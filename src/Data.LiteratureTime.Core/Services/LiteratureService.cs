@@ -1,9 +1,9 @@
 namespace Data.LiteratureTime.Core.Services;
 
 using System.Security.Cryptography;
-using Data.LiteratureTime.Core.Crypto;
-using Data.LiteratureTime.Core.Interfaces;
-using Data.LiteratureTime.Core.Models;
+using Crypto;
+using Interfaces;
+using Models;
 using Markdig;
 
 public class LiteratureService : ILiteratureService
