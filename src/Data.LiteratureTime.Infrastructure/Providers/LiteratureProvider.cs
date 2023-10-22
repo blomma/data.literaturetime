@@ -1,18 +1,34 @@
 namespace Data.LiteratureTime.Infrastructure.Providers;
 
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Data.LiteratureTime.Core.Interfaces;
+using Data.LiteratureTime.Core.Models;
 
 public class LiteratureProvider : ILiteratureProvider
 {
-    public Task<string[]> GetLiteratureTimesAsync()
-    {
-        var relativePathToFile = GetPathToQuotes();
-        return File.ReadAllLinesAsync(relativePathToFile);
-    }
+    private static readonly JsonSerializerOptions jsonSerializerOptions =
+        new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-    private static string GetPathToQuotes()
+    public IEnumerable<LiteratureTimeImport> ImportLiteratureTimes()
     {
-        var separator = Path.DirectorySeparatorChar;
-        return $"Data{separator}litclock_annotated.csv";
+        List<LiteratureTimeImport> literatureTimeImports = new();
+        var files = Directory.EnumerateFiles("Data", "*.json", SearchOption.AllDirectories);
+
+        foreach (var file in files)
+        {
+            var content = File.ReadAllText(file);
+            var result = JsonSerializer.Deserialize<List<LiteratureTimeImport>>(
+                content,
+                jsonSerializerOptions
+            );
+
+            if (result != null)
+            {
+                literatureTimeImports.AddRange(result);
+            }
+        }
+
+        return literatureTimeImports;
     }
 }

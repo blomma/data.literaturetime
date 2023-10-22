@@ -7,5 +7,6 @@ public record LiteratureTime(
     string QuoteLast,
     string Title,
     string Author,
+    string GutenbergReference,
     string Hash
 );

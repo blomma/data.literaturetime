@@ -8,16 +8,15 @@ public class CacheProvider(IConnectionMultiplexer connectionMultiplexer) : ICach
 {
     public Task<bool> SetAsync<T>(string key, T data, TimeSpan? expiration = null)
     {
-        var db = connectionMultiplexer.GetDatabase();
         var jsonData = JsonSerializer.Serialize(data);
 
+        var db = connectionMultiplexer.GetDatabase();
         return db.StringSetAsync(key, jsonData, expiration);
     }
 
     public Task<bool> ExistsAsync(string key)
     {
         var db = connectionMultiplexer.GetDatabase();
-
         return db.KeyExistsAsync(key);
     }
 }
