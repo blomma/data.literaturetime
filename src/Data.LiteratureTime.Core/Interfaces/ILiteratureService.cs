@@ -1,8 +1,8 @@
 namespace Data.LiteratureTime.Core.Interfaces;
 
-using Data.LiteratureTime.Core.Models;
+using Models;
 
 public interface ILiteratureService
 {
-    Task<List<LiteratureTime>> GetLiteratureTimesAsync();
+    List<LiteratureTime> GetLiteratureTimes();
 }

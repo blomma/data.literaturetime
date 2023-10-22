@@ -1,6 +1,8 @@
+using Data.LiteratureTime.Core.Models;
+
 namespace Data.LiteratureTime.Core.Interfaces;
 
 public interface ILiteratureProvider
 {
-    Task<string[]> GetLiteratureTimesAsync();
+    IEnumerable<LiteratureTimeImport> ImportLiteratureTimes();
 }

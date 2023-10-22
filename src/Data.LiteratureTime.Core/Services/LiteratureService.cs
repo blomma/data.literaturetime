@@ -8,52 +8,48 @@ using Models;
 
 public class LiteratureService(ILiteratureProvider literatureProvider) : ILiteratureService
 {
-    public async Task<List<LiteratureTime>> GetLiteratureTimesAsync()
+    public List<LiteratureTime> GetLiteratureTimes()
     {
-        var rows = await literatureProvider.GetLiteratureTimesAsync();
-        using SHA256 sha256Hash = SHA256.Create();
+        var literatureTimeImports = literatureProvider.ImportLiteratureTimes();
 
-        List<LiteratureTime> literatureTimes = new(rows.Length);
-        foreach (var row in rows)
+        using var sha256Hash = SHA256.Create();
+
+        List<LiteratureTime> literatureTimes = new(literatureTimeImports.Count());
+
+        foreach (
+            var (time, timeQuote, quote, title, author, gutenbergReference) in literatureTimeImports
+        )
         {
-            var (time, literatureTime, quote, title, author) = ParseRow(row);
-            var hash = Hashing.GetHash(sha256Hash, $"{time}{literatureTime}{quote}{title}{author}");
+            var smartyTimeQuote = SmartyPants(timeQuote);
+            var smartyQuote = SmartyPants(quote);
+            var hash = Hashing.GetHash(
+                sha256Hash,
+                $"{time}{smartyTimeQuote}{smartyQuote}{title}{author}{gutenbergReference}"
+            );
 
-            var qi = quote.IndexOf(literatureTime, StringComparison.InvariantCultureIgnoreCase);
-            var quoteFirst = qi > 0 ? quote[..qi] : "";
-            var quoteLast = quote[(qi + literatureTime.Length)..];
+            var qi = smartyQuote.IndexOf(
+                smartyTimeQuote,
+                StringComparison.InvariantCultureIgnoreCase
+            );
+            var quoteFirst = qi > 0 ? smartyQuote[..qi] : "";
+            var quoteLast = smartyQuote[(qi + smartyTimeQuote.Length)..];
+            var quoteTime = smartyQuote[qi..(qi + smartyTimeQuote.Length)];
 
             literatureTimes.Add(
-                new LiteratureTime(time, quoteFirst, literatureTime, quoteLast, title, author, hash)
+                new LiteratureTime(
+                    time,
+                    quoteFirst,
+                    quoteTime,
+                    quoteLast,
+                    title,
+                    author,
+                    gutenbergReference,
+                    hash
+                )
             );
         }
 
         return literatureTimes;
-    }
-
-    private static (
-        string time,
-        string literatureTime,
-        string quote,
-        string title,
-        string author
-    ) ParseRow(string row)
-    {
-        var entries = row.Split("|");
-
-        var time = entries[0].Trim();
-
-        var literatureTime = entries[1].Trim();
-        literatureTime = SmartyPants(literatureTime);
-
-        var quote = entries[2].Trim();
-        quote = SmartyPants(quote);
-
-        var title = entries[3].Trim();
-
-        var author = entries[4].Trim();
-
-        return (time, literatureTime, quote, title, author);
     }
 
     private static string SmartyPants(string input)
