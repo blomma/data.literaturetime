@@ -29,10 +29,11 @@ public class LiteratureDataWorker(
 
         var literatureTimes = literatureService.GetLiteratureTimes();
 
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
         var exceptions = new ConcurrentQueue<Exception>();
         await Parallel.ForEachAsync(
             literatureTimes,
-            new ParallelOptions { MaxDegreeOfParallelism = 3 },
+            parallelOptions,
             async (literatureTime, _) =>
             {
                 try
