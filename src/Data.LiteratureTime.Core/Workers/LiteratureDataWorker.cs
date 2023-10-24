@@ -65,7 +65,7 @@ public class LiteratureDataWorker(
 
         var grouped = literatureTimes.Select(s => new LiteratureTimeIndex(s.Time, s.Hash));
         var indexKey = PrefixKey(IndexMarker);
-        var success = await cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromHours(2));
+        var success = await cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromDays(2));
         if (!success)
         {
             throw new Exception($"Unable to save index with key:{indexKey} to cache");

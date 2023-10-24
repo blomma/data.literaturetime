@@ -20,20 +20,15 @@ public class LiteratureService(ILiteratureProvider literatureProvider) : ILitera
             var (time, timeQuote, quote, title, author, gutenbergReference) in literatureTimeImports
         )
         {
-            var smartyTimeQuote = SmartyPants(timeQuote);
-            var smartyQuote = SmartyPants(quote);
             var hash = Hashing.GetHash(
                 sha256Hash,
-                $"{time}{smartyTimeQuote}{smartyQuote}{title}{author}{gutenbergReference}"
+                $"{time}{timeQuote}{quote}{title}{author}{gutenbergReference}"
             );
 
-            var qi = smartyQuote.IndexOf(
-                smartyTimeQuote,
-                StringComparison.InvariantCultureIgnoreCase
-            );
-            var quoteFirst = qi > 0 ? smartyQuote[..qi] : "";
-            var quoteLast = smartyQuote[(qi + smartyTimeQuote.Length)..];
-            var quoteTime = smartyQuote[qi..(qi + smartyTimeQuote.Length)];
+            var qi = quote.IndexOf(timeQuote, StringComparison.InvariantCultureIgnoreCase);
+            var quoteFirst = qi > 0 ? quote[..qi] : "";
+            var quoteLast = quote[(qi + timeQuote.Length)..];
+            var quoteTime = quote[qi..(qi + timeQuote.Length)];
 
             literatureTimes.Add(
                 new LiteratureTime(
