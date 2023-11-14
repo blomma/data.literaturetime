@@ -19,16 +19,13 @@ public class LiteratureDataWorker(
     private const string KEY_PREFIX = "LIT_V3";
     private const string INDEXMARKER = "INDEX";
 
-    private readonly ILogger<LiteratureDataWorker> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
 
     private async Task PopulateAsync()
     {
-        _logger.LogInformation("Repopulating cache");
+        logger.LogInformation("Repopulating cache");
 
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = serviceProvider.CreateScope();
         var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
         var literatureService = scope.ServiceProvider.GetRequiredService<ILiteratureService>();
 
@@ -55,7 +52,7 @@ public class LiteratureDataWorker(
         var busProvider = scope.ServiceProvider.GetRequiredService<IBusProvider>();
         await busProvider.PublishAsync("literature", "index");
 
-        _logger.LogInformation("Done repopulating cache");
+        logger.LogInformation("Done repopulating cache");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -79,20 +76,20 @@ public class LiteratureDataWorker(
 
             try
             {
-                using var scope = _serviceProvider.CreateScope();
+                using var scope = serviceProvider.CreateScope();
                 var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
                 var indexKey = PrefixKey(INDEXMARKER);
                 var keyExists = await cacheProvider.ExistsAsync(indexKey);
                 if (keyExists)
                     return;
 
-                _logger.LogInformation("Index not found, populating cache");
+                logger.LogInformation("Index not found, populating cache");
 
                 await PopulateAsync();
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Caught exception");
+                logger.LogError(e, "Caught exception");
             }
             finally
             {
