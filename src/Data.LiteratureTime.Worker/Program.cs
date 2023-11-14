@@ -2,10 +2,13 @@ using Irrbloss.Extensions;
 using Serilog;
 using Serilog.Events;
 
-Log.Logger = new LoggerConfiguration().MinimumLevel
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel
     .Override("Microsoft", LogEventLevel.Information)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .Enrich
+    .FromLogContext()
+    .WriteTo
+    .Console()
     .CreateBootstrapLogger();
 
 var builder = Host.CreateDefaultBuilder(args);

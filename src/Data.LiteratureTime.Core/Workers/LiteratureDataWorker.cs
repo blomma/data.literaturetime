@@ -1,13 +1,16 @@
 namespace Data.LiteratureTime.Core.Workers;
 
+using System.Threading.Tasks;
 using Interfaces;
-using Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using Models;
 
-public class LiteratureDataWorker : IHostedService
+public class LiteratureDataWorker(
+    ILogger<LiteratureDataWorker> logger,
+    IServiceProvider serviceProvider
+) : IHostedService
 {
     private Timer? _sanityCheckTimer;
 
@@ -16,17 +19,8 @@ public class LiteratureDataWorker : IHostedService
     private const string KEY_PREFIX = "LIT_V3";
     private const string INDEXMARKER = "INDEX";
 
-    private readonly ILogger<LiteratureDataWorker> _logger;
-    private readonly IServiceProvider _serviceProvider;
-
-    public LiteratureDataWorker(
-        ILogger<LiteratureDataWorker> logger,
-        IServiceProvider serviceProvider
-    )
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly ILogger<LiteratureDataWorker> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     private static string PrefixKey(string key) => $"{KEY_PREFIX}:{key}";
 
@@ -48,7 +42,7 @@ public class LiteratureDataWorker : IHostedService
             tasks.Add(task);
         }
 
-        Task.WaitAll(tasks.ToArray());
+        Task.WaitAll([ .. tasks ]);
 
         var grouped = literatureTimes.Select(s => new LiteratureTimeIndex(s.Time, s.Hash));
         var indexKey = PrefixKey(INDEXMARKER);
@@ -75,7 +69,8 @@ public class LiteratureDataWorker : IHostedService
 
             try
             {
-                if (!await _lockSemaphore.WaitAsync(0, cancellationToken)) return;
+                if (!await _lockSemaphore.WaitAsync(0, cancellationToken))
+                    return;
             }
             catch
             {
@@ -88,7 +83,8 @@ public class LiteratureDataWorker : IHostedService
                 var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
                 var indexKey = PrefixKey(INDEXMARKER);
                 var keyExists = await cacheProvider.ExistsAsync(indexKey);
-                if (keyExists) return;
+                if (keyExists)
+                    return;
 
                 _logger.LogInformation("Index not found, populating cache");
 

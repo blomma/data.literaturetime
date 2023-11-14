@@ -3,17 +3,12 @@ namespace Data.LiteratureTime.Core.Services;
 using System.Security.Cryptography;
 using Crypto;
 using Interfaces;
-using Models;
 using Markdig;
+using Models;
 
-public class LiteratureService : ILiteratureService
+public class LiteratureService(ILiteratureProvider literatureProvider) : ILiteratureService
 {
-    private readonly ILiteratureProvider _literatureProvider;
-
-    public LiteratureService(ILiteratureProvider literatureProvider)
-    {
-        _literatureProvider = literatureProvider;
-    }
+    private readonly ILiteratureProvider _literatureProvider = literatureProvider;
 
     public async Task<List<LiteratureTime>> GetLiteratureTimesAsync()
     {
