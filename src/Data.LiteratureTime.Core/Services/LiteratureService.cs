@@ -8,11 +8,9 @@ using Models;
 
 public class LiteratureService(ILiteratureProvider literatureProvider) : ILiteratureService
 {
-    private readonly ILiteratureProvider _literatureProvider = literatureProvider;
-
     public async Task<List<LiteratureTime>> GetLiteratureTimesAsync()
     {
-        var rows = await _literatureProvider.GetLiteratureTimesAsync();
+        var rows = await literatureProvider.GetLiteratureTimesAsync();
         using SHA256 sha256Hash = SHA256.Create();
 
         List<LiteratureTime> literatureTimes = new(rows.Length);
