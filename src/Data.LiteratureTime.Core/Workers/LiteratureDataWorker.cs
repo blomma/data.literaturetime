@@ -3,25 +3,35 @@ using System.Collections.Concurrent;
 namespace Data.LiteratureTime.Core.Workers;
 
 using System.Threading.Tasks;
+using Data.LiteratureTime.Core.Exceptions;
 using Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Models;
 
+public static partial class LiteratureDataWorkerLog
+{
+    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Cache:{message}")]
+    public static partial void Cache(ILogger logger, string message);
+
+    [LoggerMessage(EventId = 1, Message = "Index:{message}")]
+    public static partial void Index(ILogger logger, LogLevel level, Exception? ex, string message);
+}
+
 public class LiteratureDataWorker(
     ILogger<LiteratureDataWorker> logger,
     IServiceProvider serviceProvider
 ) : BackgroundService
 {
-    private const string KeyPrefix = "LIT_V4";
+    private const string KeyPrefix = "LIT_V3";
     private const string IndexMarker = "INDEX";
 
     private static string PrefixKey(string key) => $"{KeyPrefix}:{key}";
 
     private async Task PopulateAsync()
     {
-        logger.LogInformation("Repopulating cache");
+        LiteratureDataWorkerLog.Cache(logger, "Start populating");
 
         using var scope = serviceProvider.CreateScope();
         var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
@@ -44,9 +54,10 @@ public class LiteratureDataWorker(
                         literatureTime,
                         TimeSpan.FromHours(2)
                     );
+
                     if (!success)
                     {
-                        throw new Exception(
+                        throw new CacheException(
                             $"Unable to save literature time with key:{key} to cache"
                         );
                     }
@@ -68,13 +79,13 @@ public class LiteratureDataWorker(
         var success = await cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromDays(2));
         if (!success)
         {
-            throw new Exception($"Unable to save index with key:{indexKey} to cache");
+            throw new CacheException($"Unable to save index with key:{indexKey} to cache");
         }
 
         var busProvider = scope.ServiceProvider.GetRequiredService<IBusProvider>();
         await busProvider.PublishAsync("literature", PrefixKey("index"));
 
-        logger.LogInformation("Done repopulating cache");
+        LiteratureDataWorkerLog.Cache(logger, "Done populating");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -99,12 +110,12 @@ public class LiteratureDataWorker(
                         continue;
                     }
 
-                    logger.LogInformation("Index not found");
+                    LiteratureDataWorkerLog.Index(logger, LogLevel.Information, null, "Not found");
                     await PopulateAsync();
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e, "Caught exception");
+                    LiteratureDataWorkerLog.Index(logger, LogLevel.Error, e, e.Message);
                 }
             }
         }

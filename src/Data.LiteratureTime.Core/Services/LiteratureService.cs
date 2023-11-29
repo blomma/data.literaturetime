@@ -33,9 +33,9 @@ public class LiteratureService(ILiteratureProvider literatureProvider) : ILitera
             literatureTimes.Add(
                 new LiteratureTime(
                     time,
-                    quoteFirst,
-                    quoteTime,
-                    quoteLast,
+                    quoteFirst.Replace("\n", " "),
+                    quoteTime.Replace("\n", " "),
+                    quoteLast.Replace("\n", " "),
                     title,
                     author,
                     gutenbergReference,

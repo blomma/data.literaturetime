@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <AnalysisLevel>latest-Recommended</AnalysisLevel>
+        <AnalysisLevelPerformance>All</AnalysisLevelPerformance>
     </PropertyGroup>
 
     <ItemGroup>

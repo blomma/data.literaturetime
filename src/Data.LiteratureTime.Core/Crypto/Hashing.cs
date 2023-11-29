@@ -1,5 +1,6 @@
 namespace Data.LiteratureTime.Core.Crypto;
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,7 +13,7 @@ public static class Hashing
         var stringBuilder = new StringBuilder();
         foreach (var t in data)
         {
-            stringBuilder.Append(t.ToString("x2"));
+            stringBuilder.Append(t.ToString("x2", CultureInfo.InvariantCulture));
         }
 
         return stringBuilder.ToString();
