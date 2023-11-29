@@ -12,7 +12,7 @@ public class LiteratureProvider : ILiteratureProvider
 
     public IEnumerable<LiteratureTimeImport> ImportLiteratureTimes()
     {
-        List<LiteratureTimeImport> literatureTimeImports = new();
+        List<LiteratureTimeImport> literatureTimeImports =  [ ];
         var files = Directory.EnumerateFiles("Data", "*.json", SearchOption.AllDirectories);
 
         foreach (var file in files)

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Irrbloss.Extensions;
 using Serilog;
 using Serilog.Events;
@@ -8,7 +9,11 @@ Log.Logger = new LoggerConfiguration()
     .Enrich
     .FromLogContext()
     .WriteTo
-    .Console()
+    .Console(
+        LogEventLevel.Verbose,
+        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+        CultureInfo.CurrentCulture
+    )
     .CreateBootstrapLogger();
 
 var builder = Host.CreateDefaultBuilder(args);
@@ -21,7 +26,6 @@ builder.ConfigureServices(
     (context, services) =>
     {
         services.AddServiceModules(context.Configuration);
-        services.AddRouterModules();
     }
 );
 
