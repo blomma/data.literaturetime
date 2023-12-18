@@ -1,7 +1,7 @@
-namespace Data.LiteratureTime.Infrastructure.Providers;
-
 using Data.LiteratureTime.Core.Interfaces;
 using StackExchange.Redis;
+
+namespace Data.LiteratureTime.Infrastructure.Providers;
 
 public class BusProvider(IConnectionMultiplexer connectionMultiplexer) : IBusProvider
 {
