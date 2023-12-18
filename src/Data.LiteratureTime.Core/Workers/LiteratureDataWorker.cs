@@ -1,14 +1,12 @@
 using System.Collections.Concurrent;
-
-namespace Data.LiteratureTime.Core.Workers;
-
-using System.Threading.Tasks;
 using Data.LiteratureTime.Core.Exceptions;
-using Interfaces;
+using Data.LiteratureTime.Core.Interfaces;
+using Data.LiteratureTime.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Models;
+
+namespace Data.LiteratureTime.Core.Workers;
 
 public static partial class LiteratureDataWorkerLog
 {

@@ -1,9 +1,9 @@
-namespace Data.LiteratureTime.Infrastructure;
-
 using Irrbloss.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+
+namespace Data.LiteratureTime.Infrastructure;
 
 public class ServiceModule : IServiceModule
 {

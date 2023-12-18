@@ -1,24 +1,27 @@
-namespace Data.LiteratureTime.Infrastructure.Providers;
-
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Data.LiteratureTime.Core.Interfaces;
-using Data.LiteratureTime.Core.Models;
+
+namespace Data.LiteratureTime.Infrastructure.Providers;
 
 public class LiteratureProvider : ILiteratureProvider
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions =
-        new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+        new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            PropertyNameCaseInsensitive = true
+        };
 
-    public IEnumerable<LiteratureTimeImport> ImportLiteratureTimes()
+    public List<Core.Models.LiteratureTime> ImportLiteratureTimes()
     {
-        List<LiteratureTimeImport> literatureTimeImports =  [ ];
+        List<Core.Models.LiteratureTime> literatureTimeImports = [];
         var files = Directory.EnumerateFiles("Data", "*.json", SearchOption.AllDirectories);
 
         foreach (var file in files)
         {
             var content = File.ReadAllText(file);
-            var result = JsonSerializer.Deserialize<List<LiteratureTimeImport>>(
+            var result = JsonSerializer.Deserialize<List<Core.Models.LiteratureTime>>(
                 content,
                 jsonSerializerOptions
             );

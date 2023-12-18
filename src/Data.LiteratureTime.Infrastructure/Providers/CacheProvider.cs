@@ -1,8 +1,8 @@
-namespace Data.LiteratureTime.Infrastructure.Providers;
-
 using System.Text.Json;
 using Data.LiteratureTime.Core.Interfaces;
 using StackExchange.Redis;
+
+namespace Data.LiteratureTime.Infrastructure.Providers;
 
 public class CacheProvider(IConnectionMultiplexer connectionMultiplexer) : ICacheProvider
 {
