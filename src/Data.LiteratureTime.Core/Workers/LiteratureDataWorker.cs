@@ -50,7 +50,7 @@ public class LiteratureDataWorker(
                     var success = await cacheProvider.SetAsync(
                         key,
                         literatureTime,
-                        TimeSpan.FromHours(2)
+                        TimeSpan.FromDays(3)
                     );
 
                     if (!success)
