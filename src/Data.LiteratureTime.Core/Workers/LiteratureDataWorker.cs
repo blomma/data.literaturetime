@@ -90,6 +90,8 @@ public class LiteratureDataWorker(
     {
         try
         {
+            await PopulateAsync();
+
             PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
 
             while (
