@@ -4,12 +4,9 @@ using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel
-    .Override("Microsoft", LogEventLevel.Information)
-    .Enrich
-    .FromLogContext()
-    .WriteTo
-    .Console(
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(
         LogEventLevel.Verbose,
         "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
         CultureInfo.CurrentCulture
