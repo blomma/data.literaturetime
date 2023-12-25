@@ -99,9 +99,10 @@ public class LiteratureDataWorker(
                 && await timer.WaitForNextTickAsync(stoppingToken)
             )
             {
+                using var scope = serviceProvider.CreateScope();
+
                 try
                 {
-                    using var scope = serviceProvider.CreateScope();
                     var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
                     var indexKey = PrefixKey(IndexMarker);
                     var keyExists = await cacheProvider.ExistsAsync(indexKey);
@@ -118,6 +119,8 @@ public class LiteratureDataWorker(
                     LiteratureDataWorkerLog.Index(logger, LogLevel.Error, e, e.Message);
                 }
             }
+
+            timer.Dispose();
         }
         catch (OperationCanceledException)
         {

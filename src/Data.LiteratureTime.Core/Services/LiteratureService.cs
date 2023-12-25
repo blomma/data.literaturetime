@@ -4,7 +4,7 @@ namespace Data.LiteratureTime.Core.Services;
 
 public class LiteratureService(ILiteratureProvider literatureProvider) : ILiteratureService
 {
-    public List<Models.LiteratureTime> GetLiteratureTimes()
+    public IEnumerable<Models.LiteratureTime> GetLiteratureTimes()
     {
         return literatureProvider.ImportLiteratureTimes();
     }

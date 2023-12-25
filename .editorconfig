@@ -5,3 +5,8 @@ root = true
 charset = utf-8
 
 [*.{cs,csx,cake,vb,vbx}]
+
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1016.severity = none
+dotnet_diagnostic.CA1724.severity = none

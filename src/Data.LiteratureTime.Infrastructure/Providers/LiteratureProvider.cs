@@ -13,7 +13,7 @@ public class LiteratureProvider : ILiteratureProvider
             PropertyNameCaseInsensitive = true
         };
 
-    public List<Core.Models.LiteratureTime> ImportLiteratureTimes()
+    public IEnumerable<Core.Models.LiteratureTime> ImportLiteratureTimes()
     {
         List<Core.Models.LiteratureTime> literatureTimeImports = [];
         var files = Directory.EnumerateFiles("Data", "*.json", SearchOption.AllDirectories);
