@@ -16,7 +16,7 @@ public class LiteratureProvider : ILiteratureProvider
     public IEnumerable<Core.Models.LiteratureTime> ImportLiteratureTimes()
     {
         List<Core.Models.LiteratureTime> literatureTimeImports = [];
-        var files = Directory.EnumerateFiles("Data", "*.json", SearchOption.AllDirectories);
+        var files = Directory.EnumerateFiles("Quotes", "*.json", SearchOption.AllDirectories);
 
         foreach (var file in files)
         {

@@ -1,3 +1,6 @@
 [submodule "src/Irrbloss"]
 	path = src/Irrbloss
 	url = https://github.com/blomma/irrbloss
+[submodule "src/Data.LiteratureTime.Worker/Quotes"]
+	path = src/Data.LiteratureTime.Worker/Quotes
+	url = https://github.com/blomma/translated.quotes.literaturetime
