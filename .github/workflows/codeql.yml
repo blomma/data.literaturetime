@@ -37,7 +37,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                  submodules: true
+                  submodules: recursive
+                  token: ${{ secrets.GH_PRIVATE_REPO }}
 
             # Initializes the CodeQL tools for scanning.
             - name: Initialize CodeQL
