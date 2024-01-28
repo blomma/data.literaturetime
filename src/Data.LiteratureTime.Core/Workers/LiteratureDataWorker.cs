@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
-using Data.LiteratureTime.Core.Exceptions;
 using Data.LiteratureTime.Core.Interfaces;
-using Data.LiteratureTime.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,11 +8,8 @@ namespace Data.LiteratureTime.Core.Workers;
 
 public static partial class LiteratureDataWorkerLog
 {
-    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Cache:{message}")]
-    public static partial void Cache(ILogger logger, string message);
-
-    [LoggerMessage(EventId = 1, Message = "Index:{message}")]
-    public static partial void Index(ILogger logger, LogLevel level, Exception? ex, string message);
+    [LoggerMessage(EventId = 0, Message = "Cache:{message}")]
+    public static partial void Cache(ILogger logger, LogLevel level, Exception? ex, string message);
 }
 
 public class LiteratureDataWorker(
@@ -22,14 +17,11 @@ public class LiteratureDataWorker(
     IServiceProvider serviceProvider
 ) : BackgroundService
 {
-    private const string KeyPrefix = "LIT_V3";
-    private const string IndexMarker = "INDEX";
-
-    private static string PrefixKey(string key) => $"{KeyPrefix}:{key}";
+    private static string PrefixKey(string key) => $"literature:time:{key}";
 
     private async Task PopulateAsync()
     {
-        LiteratureDataWorkerLog.Cache(logger, "Start populating");
+        LiteratureDataWorkerLog.Cache(logger, LogLevel.Information, null, "Start populating");
 
         using var scope = serviceProvider.CreateScope();
         var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
@@ -39,26 +31,22 @@ public class LiteratureDataWorker(
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
         var exceptions = new ConcurrentQueue<Exception>();
+
+        var groupedLiteratureTimes = literatureTimes.GroupBy(l => l.Time);
+
         await Parallel.ForEachAsync(
-            literatureTimes,
+            groupedLiteratureTimes,
             parallelOptions,
             async (literatureTime, _) =>
             {
                 try
                 {
-                    var key = PrefixKey(literatureTime.Hash);
-                    var success = await cacheProvider.SetAsync(
+                    var key = PrefixKey(literatureTime.Key);
+                    await cacheProvider.SetAsync(
                         key,
-                        literatureTime,
+                        literatureTime.ToList(),
                         TimeSpan.FromDays(3)
                     );
-
-                    if (!success)
-                    {
-                        throw new CacheException(
-                            $"Unable to save literature time with key:{key} to cache"
-                        );
-                    }
                 }
                 catch (Exception e)
                 {
@@ -72,18 +60,10 @@ public class LiteratureDataWorker(
             throw new AggregateException(exceptions);
         }
 
-        var grouped = literatureTimes.Select(s => new LiteratureTimeIndex(s.Time, s.Hash));
-        var indexKey = PrefixKey(IndexMarker);
-        var success = await cacheProvider.SetAsync(indexKey, grouped, TimeSpan.FromDays(2));
-        if (!success)
-        {
-            throw new CacheException($"Unable to save index with key:{indexKey} to cache");
-        }
+        var key = PrefixKey("marker");
+        await cacheProvider.SetAsync(key, string.Empty, TimeSpan.FromDays(2));
 
-        var busProvider = scope.ServiceProvider.GetRequiredService<IBusProvider>();
-        await busProvider.PublishAsync("literature", PrefixKey("index"));
-
-        LiteratureDataWorkerLog.Cache(logger, "Done populating");
+        LiteratureDataWorkerLog.Cache(logger, LogLevel.Information, null, "Done populating");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -104,19 +84,25 @@ public class LiteratureDataWorker(
                 try
                 {
                     var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
-                    var indexKey = PrefixKey(IndexMarker);
+                    var indexKey = PrefixKey("marker");
                     var keyExists = await cacheProvider.ExistsAsync(indexKey);
                     if (keyExists)
                     {
                         continue;
                     }
 
-                    LiteratureDataWorkerLog.Index(logger, LogLevel.Information, null, "Not found");
+                    LiteratureDataWorkerLog.Cache(
+                        logger,
+                        LogLevel.Information,
+                        null,
+                        "Marker not found"
+                    );
+
                     await PopulateAsync();
                 }
                 catch (Exception e)
                 {
-                    LiteratureDataWorkerLog.Index(logger, LogLevel.Error, e, e.Message);
+                    LiteratureDataWorkerLog.Cache(logger, LogLevel.Error, e, e.Message);
                 }
             }
 
