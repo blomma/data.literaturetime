@@ -6,10 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Data.LiteratureTime.Core.Workers;
 
-public static partial class LiteratureDataWorkerLog
+internal static partial class LoggerExtensions
 {
-    [LoggerMessage(EventId = 0, Message = "Cache:{message}")]
-    public static partial void Cache(ILogger logger, LogLevel level, Exception? ex, string message);
+    [LoggerMessage(LogLevel.Information, "Cache `{message}`")]
+    public static partial void Cache(this ILogger logger, string message);
+
+    [LoggerMessage(LogLevel.Error, "Cache `{message}`")]
+    public static partial void Cache(this ILogger logger, Exception ex, string message);
 }
 
 public class LiteratureDataWorker(
@@ -21,7 +24,7 @@ public class LiteratureDataWorker(
 
     private async Task PopulateAsync()
     {
-        LiteratureDataWorkerLog.Cache(logger, LogLevel.Information, null, "Start populating");
+        logger.Cache("Start populating");
 
         using var scope = serviceProvider.CreateScope();
         var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
@@ -63,7 +66,7 @@ public class LiteratureDataWorker(
         var key = PrefixKey("marker");
         await cacheProvider.SetAsync(key, string.Empty, TimeSpan.FromDays(2));
 
-        LiteratureDataWorkerLog.Cache(logger, LogLevel.Information, null, "Done populating");
+        logger.Cache("Done populating");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -91,18 +94,13 @@ public class LiteratureDataWorker(
                         continue;
                     }
 
-                    LiteratureDataWorkerLog.Cache(
-                        logger,
-                        LogLevel.Information,
-                        null,
-                        "Marker not found"
-                    );
+                    logger.Cache("Marker not found");
 
                     await PopulateAsync();
                 }
                 catch (Exception e)
                 {
-                    LiteratureDataWorkerLog.Cache(logger, LogLevel.Error, e, e.Message);
+                    logger.Cache(e, e.Message);
                 }
             }
 
