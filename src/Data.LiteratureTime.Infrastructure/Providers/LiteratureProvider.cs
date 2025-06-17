@@ -6,12 +6,11 @@ namespace Data.LiteratureTime.Infrastructure.Providers;
 
 public class LiteratureProvider : ILiteratureProvider
 {
-    private static readonly JsonSerializerOptions jsonSerializerOptions =
-        new()
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            PropertyNameCaseInsensitive = true,
-        };
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNameCaseInsensitive = true,
+    };
 
     public IEnumerable<Core.Models.LiteratureTime> ImportLiteratureTimes()
     {
