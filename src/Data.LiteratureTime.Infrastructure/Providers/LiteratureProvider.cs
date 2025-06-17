@@ -10,7 +10,7 @@ public class LiteratureProvider : ILiteratureProvider
         new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
         };
 
     public IEnumerable<Core.Models.LiteratureTime> ImportLiteratureTimes()
