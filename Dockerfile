@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-arm64v8 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine-arm64v8 AS base
 WORKDIR /app
 EXPOSE 80
 
 ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS build
 WORKDIR "/"
 COPY "data.literaturetime.sln" "./"
 COPY ["src/Data.LiteratureTime.Worker/Data.LiteratureTime.Worker.csproj", "./src/Data.LiteratureTime.Worker/"]
